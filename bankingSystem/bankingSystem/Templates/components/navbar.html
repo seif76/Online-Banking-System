@@ -1,0 +1,32 @@
+<nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            
+            <a href="{% url 'profile' %}" class="text-xl font-bold flex items-center gap-2">
+                <span class="text-blue-400">🏦</span> E-Just Bank
+            </a>
+
+            <div class="hidden md:flex space-x-8">
+                <a href="{% url 'profile' %}" class="hover:text-blue-400 transition">Profile</a>
+                
+                <a href="#" class="hover:text-blue-400 transition text-gray-400 cursor-not-allowed" title="Coming Soon">Accounts</a>
+                
+                <a href="#" class="hover:text-blue-400 transition text-gray-400 cursor-not-allowed" title="Coming Soon">Transfer</a>
+                
+                <a href="#" class="hover:text-blue-400 transition text-gray-400 cursor-not-allowed" title="Coming Soon">Loans</a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                {% if request.user %}
+                    <span class="text-sm text-gray-300">Welcome, {{ request.user.username }}</span>
+                    <a href="{% url 'logout' %}" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm font-bold transition">
+                        Logout
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="text-blue-400 hover:text-white">Login</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</nav>
