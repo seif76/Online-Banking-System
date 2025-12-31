@@ -166,7 +166,48 @@ The project is divided into 4 modular applications, each handling a specific dom
 
 * loans: Manages Loan applications and approval logic.
 
+
+## 💳 Bank Accounts & Loan System
+
+### 🔁 Multiple Accounts Per User
+
+A single user (same National ID) can own **multiple bank accounts** — for example:
+
+- Savings Account  
+- Salary Account  
+- Investment Account  
+
+Each account is uniquely tracked but still belongs to the same user profile.
+
+---
+
+## 💸 Core Banking Actions
+
+### ➖ Withdraw
+Users can safely withdraw funds (validation ensures no negative balance).
+
+### 🔁 Transactions
+Users can transfer money between their own accounts or other users’ accounts.
+
+All transactions are:
+
+- Logged
+- Validated
+
+---
+
+## 🏦 Real-Time Loan Engine
+
+Users can **request loans** directly from their account dashboard.
+
+Loan approval is calculated **in real time** using account balance.
+
+### 📐 Loan Rule
+The **maximum loan** allowed is: 5 x the account balance
+
+
     
+
 
 
 
