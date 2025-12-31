@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-800">My Loans</h1>
+            <p class="text-slate-500">Manage your active and pending applications</p>
+        </div>
+        <a href="{% url 'apply-loan' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition">
+            Apply New Loan
+        </a>
+    </div>
+
+    <div class="space-y-4">
+        {% for loan in loans %}
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex justify-between items-center">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase">Amount</p>
+                <p class="text-xl font-bold text-slate-800">${{ loan.amount }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase text-center">Status</p>
+                <span class="px-3 py-1 rounded-full text-xs font-bold 
+                    {% if loan.status == 'APPROVED' %} bg-green-100 text-green-700 
+                    {% elif loan.status == 'PENDING' %} bg-yellow-100 text-yellow-700 
+                    {% else %} bg-red-100 text-red-700 {% endif %}">
+                    {{ loan.status }}
+                </span>
+            </div>
+            <div>
+                {% if loan.status == 'APPROVED' %}
+                <!-- <a href="{% url 'pay-installment' loan.id %}" class="text-blue-600 font-bold hover:underline">Pay Now</a> -->
+                <a href="#" class="text-blue-600 font-bold hover:underline">Pay Now</a>
+                
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white rounded-xl p-12 text-center border-2 border-dashed border-slate-200">
+            <p class="text-slate-400">You don't have any loans yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

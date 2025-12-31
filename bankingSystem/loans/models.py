@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 from abc import ABC, abstractmethod
 from decimal import Decimal
 from users.models import User

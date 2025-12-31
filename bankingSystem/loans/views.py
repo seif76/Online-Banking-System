@@ -1,12 +1,11 @@
 from django.views import View
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Loan
 from .forms import LoanApplicationForm, LoanPaymentForm
 
 
-class ApplyLoanView(LoginRequiredMixin, View):
+class ApplyLoanView(View):
     def get(self, request):
         form = LoanApplicationForm()
         return render(request, 'loans/apply_loan.html', {'form': form})
@@ -24,7 +23,7 @@ class ApplyLoanView(LoginRequiredMixin, View):
         return render(request, 'loans/apply_loan.html', {'form': form})
 
 
-class MyLoansView(LoginRequiredMixin, View):
+class MyLoansView(View):
     def get(self, request):
         loans = Loan.objects.filter(user=request.user)
         return render(request, 'loans/my_loans.html', {
@@ -32,7 +31,7 @@ class MyLoansView(LoginRequiredMixin, View):
         })
 
 
-class PayInstallmentView(LoginRequiredMixin, View):
+class PayInstallmentView( View):
     def get(self, request, pk):
         loan = get_object_or_404(Loan, pk=pk, user=request.user)
         form = LoanPaymentForm()
@@ -52,7 +51,7 @@ class PayInstallmentView(LoginRequiredMixin, View):
 
 
 
-class AdminLoanApprovalView(LoginRequiredMixin, View):
+class AdminLoanApprovalView( View):
     def get(self, request):
         loans = Loan.objects.filter(status='PENDING')
         return render(request, 'loans/admin_approvals.html', {
