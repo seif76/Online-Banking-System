@@ -10,4 +10,5 @@ urlpatterns = [
     path('create/', CreateAccountView.as_view(), name='create'),
     path('deposit/<int:pk>/', DepositView.as_view(), name='deposit'),
     
+    
 ]
