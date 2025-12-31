@@ -64,7 +64,6 @@ class LogoutView(View):
         response.delete_cookie('access_token')
         return response
     
-# @method_decorator(jwt_required, name='dispatch')    
 class ProfileView(View):
     def get(self, request):
 

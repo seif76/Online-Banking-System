@@ -1,113 +1,75 @@
 from django.db import models
-from abc import ABC, abstractmethod
 from decimal import Decimal
-from users.models import User
+from users.models import TimeStampedModel , User
+from accounts.models import BankAccount
 
 
-class LoanCalculator(ABC):
-    def __init__(self, amount, duration_months, interest_rate):
-        self.amount = Decimal(amount)
-        self.duration_months = duration_months
-        self.interest_rate = Decimal(interest_rate)
+class Loan(TimeStampedModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='loans')
+    account = models.ForeignKey(BankAccount, on_delete=models.CASCADE, related_name='loans')
+    
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    term_months = models.IntegerField(default=0)
+    
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=4, default=0)
+    total_repayment = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    remaining_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    monthly_installment = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    is_active = models.BooleanField(default=False)
+    def make_payment(self):
 
-    @abstractmethod
-    def calculate_monthly_installment(self):
-        pass
+        if not self.is_active or self.remaining_amount <= 0:
+            return False, "Loan is already fully paid."
 
-    @abstractmethod
-    def total_payable_amount(self):
-        pass
+        payment_amount = min(self.monthly_installment, self.remaining_amount)
 
+        if self.account.balance < payment_amount:
+            return False, "Insufficient funds in the linked account."
 
-class PersonalLoanCalculator(LoanCalculator):
-    def calculate_monthly_installment(self):
-        total = self.total_payable_amount()
-        return total / self.duration_months
+        self.account.balance -= payment_amount
+        self.account.save()
 
-    def total_payable_amount(self):
-        return self.amount + (self.amount * self.interest_rate)
-
-
-class HomeLoanCalculator(LoanCalculator):
-    def calculate_monthly_installment(self):
-        total = self.total_payable_amount()
-        return total / self.duration_months
-
-    def total_payable_amount(self):
-        return self.amount + (self.amount * (self.interest_rate / 2))
-
-
-class Loan(models.Model):
-    LOAN_TYPES = (
-        ('PERSONAL', 'Personal Loan'),
-        ('HOME', 'Home Loan'),
-    )
-
-    STATUS_CHOICES = (
-        ('PENDING', 'Pending'),
-        ('APPROVED', 'Approved'),
-        ('REJECTED', 'Rejected'),
-        ('CLOSED', 'Closed'),
-    )
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    loan_type = models.CharField(max_length=10, choices=LOAN_TYPES)
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    duration_months = models.PositiveIntegerField()
-    interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
-    remaining_amount = models.DecimalField(max_digits=12, decimal_places=2)
-    monthly_installment = models.DecimalField(max_digits=12, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def is_eligible(self, income):
-        return income >= (self.amount / self.duration_months)
-
-    def get_calculator(self):
-        if self.loan_type == 'PERSONAL':
-            return PersonalLoanCalculator(
-                self.amount,
-                self.duration_months,
-                self.interest_rate
-            )
-        return HomeLoanCalculator(
-            self.amount,
-            self.duration_months,
-            self.interest_rate
-        )
-
-    def approve(self):
-        calculator = self.get_calculator()
-        self.monthly_installment = calculator.calculate_monthly_installment()
-        self.remaining_amount = calculator.total_payable_amount()
-        self.status = 'APPROVED'
+        # Update Loan
+        self.remaining_amount -= payment_amount
+        if self.remaining_amount <= 0:
+            self.remaining_amount = 0
+            self.is_active = False
         self.save()
 
-    def reject(self):
-        self.status = 'REJECTED'
-        self.save()
-
-    def make_payment(self, amount):
-        amount = Decimal(amount)
-        if self.status != 'APPROVED':
-            raise ValueError('Loan is not approved')
-        if amount <= 0:
-            raise ValueError('Invalid payment amount')
-        if amount > self.remaining_amount:
-            raise ValueError('Payment exceeds remaining amount')
- 
-        self.remaining_amount -= amount
-        if self.remaining_amount == 0:
-            self.status = 'CLOSED'
-        self.save()
-
-        return LoanPayment.objects.create(
+        LoanPayment.objects.create(
             loan=self,
-            amount=amount
+            amount=payment_amount
         )
+        return True, f"Successfully paid ${payment_amount:.2f}"
+    def process_instant_loan(self):
+        
+        max_limit = self.account.balance * 5
+        if self.amount > max_limit:
+            return False, f"Rejected. Max limit for this account is ${max_limit}."
 
+        if self.term_months <= 6:
+            self.interest_rate = Decimal('0.05')
+        elif self.term_months <= 12:
+            self.interest_rate = Decimal('0.08')
+        else:
+            self.interest_rate = Decimal('0.12')
 
-class LoanPayment(models.Model):
+        self.total_repayment = self.amount * (1 + self.interest_rate)
+        self.remaining_amount = self.total_repayment
+        self.monthly_installment = self.total_repayment / self.term_months
+        
+        self.is_active = True
+        self.account.balance += self.amount
+        
+        self.account.save()
+        self.save()
+        
+        return True, "Loan approved and funds deposited!"
+
+class LoanPayment(TimeStampedModel):
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='payments')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    paid_at = models.DateTimeField(auto_now_add=True)
+    payment_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment of {self.amount} for Loan {self.loan.id}"
