@@ -146,14 +146,28 @@ To ensure data consistency, we used Django Signals.
     
 
 
-### Phase 6: Frontend Architecture
+### Phase 5: Frontend Architecture
 
 We set up a **Global Template Inheritance** system.
 
 *   **base.html**: Contains the Tailwind CSS setup and the Global Navbar.
     
 *   **dashboard.html**: Extends the base and injects content.
+
+## sections 
+
+The project is divided into 4 modular applications, each handling a specific domain:
+
+* users: Handles Registration, Login (JWT), and User Profiles.
+
+* accounts: Manages Bank Accounts (Savings/Checking) and Balances.
+
+* transactions: Handles Deposits, Withdrawals, and Money Transfers.
+
+* loans: Manages Loan applications and approval logic.
+
     
+
 
 
 
