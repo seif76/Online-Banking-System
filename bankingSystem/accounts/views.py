@@ -1,9 +1,8 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect ,get_object_or_404
 from django.views import View
-# REMOVED: from django.contrib import messages 
 from .models import BankAccount
 from .services import AccountCreation
-
+from .forms import DepositForm 
 class DashboardView(View):
     def get(self, request):
         user_accounts = BankAccount.objects.filter(user=request.user)
@@ -31,3 +30,36 @@ class CreateAccountView(View):
         except ValueError as e:
             # Error: Pass the error string manually to the template
             return render(request, 'accounts/create_account.html', {'error': str(e)})
+        
+class DepositView(View):
+    def get(self, request, pk):
+        # pk is the ID of the account we want to deposit into
+        account = get_object_or_404(BankAccount, pk=pk, user=request.user)
+        form = DepositForm()
+        return render(request, 'accounts/deposit.html', {'form': form, 'account': account})
+
+    def post(self, request, pk):
+        account = get_object_or_404(BankAccount, pk=pk, user=request.user)
+        form = DepositForm(request.POST)
+
+        if form.is_valid():
+            try:
+                # Call the Service
+                AccountCreation.deposit(
+                    account_id=account.id,
+                    amount=form.cleaned_data['amount'],
+                    card_number=form.cleaned_data['card_number'],
+                    card_cvv=form.cleaned_data['cvv'],
+                    card_expiry=form.cleaned_data['expiry']
+                )
+                return redirect('accounts') # Redirect to dashboard on success
+            
+            except ValueError as e:
+                # Pass the error to the template
+                return render(request, 'accounts/deposit.html', {
+                    'form': form, 
+                    'account': account, 
+                    'error': str(e)
+                })
+        
+        return render(request, 'accounts/deposit.html', {'form': form, 'account': account})
