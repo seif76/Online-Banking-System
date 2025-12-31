@@ -1,9 +1,7 @@
 from django.views import View
 from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse_lazy
 from .models import Loan
 from .forms import LoanApplicationForm, LoanPaymentForm
-
 
 class ApplyLoanView(View):
     def get(self, request):
@@ -14,10 +12,10 @@ class ApplyLoanView(View):
         form = LoanApplicationForm(request.POST)
         if form.is_valid():
             loan = form.save(commit=False)
-            loan.user = request.user
+            loan.user = request.user 
             loan.status = 'PENDING'
-            loan.remaining_amount = 0
-            loan.monthly_installment = 0
+            loan.remaining_amount = form.cleaned_data['amount'] 
+            loan.monthly_installment = 0 
             loan.save()
             return redirect('my-loans')
         return render(request, 'loans/apply_loan.html', {'form': form})
@@ -31,7 +29,7 @@ class MyLoansView(View):
         })
 
 
-class PayInstallmentView( View):
+class PayInstallmentView(View):
     def get(self, request, pk):
         loan = get_object_or_404(Loan, pk=pk, user=request.user)
         form = LoanPaymentForm()
@@ -45,13 +43,12 @@ class PayInstallmentView( View):
         form = LoanPaymentForm(request.POST)
         if form.is_valid():
             amount = form.cleaned_data['amount']
-            loan.make_payment(amount)
+            loan.make_payment(amount) 
             return redirect('my-loans')
         return render(request, 'loans/pay_installment.html', {'loan': loan, 'form': form})
 
 
-
-class AdminLoanApprovalView( View):
+class AdminLoanApprovalView(View):
     def get(self, request):
         loans = Loan.objects.filter(status='PENDING')
         return render(request, 'loans/admin_approvals.html', {
@@ -64,8 +61,8 @@ class AdminLoanApprovalView( View):
         loan = get_object_or_404(Loan, pk=loan_id)
         
         if action == 'approve':
-            loan.approve()
+            loan.approve() 
         elif action == 'reject':
-            loan.reject()
+            loan.reject() 
             
         return redirect('admin-approvals')
