@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # Load .env file
 env_path = BASE_DIR / '.env'
 if os.path.exists(env_path):
@@ -14,12 +15,14 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
-    'django.contrib.staticfiles',
-    'users',
-    'accounts', 
+     'django.contrib.staticfiles',
+     'users',
+     'accounts', 
     'loans',   
+     'transactions',
 
-]
+ ]
+
 
 MIDDLEWARE = [
  'users.middleware.JWTAuthMiddleware',

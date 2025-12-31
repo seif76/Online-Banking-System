@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex justify-center">
+    <div class="w-full max-w-lg">
+        <div class="bg-white p-8 rounded-lg shadow-lg">
+            
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                💸 Make a Transfer
+            </h2>
+
+            {% if form.non_field_errors %}
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Pay From</label>
+                    {{ form.from_account }}
+                    <style> select { width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; } </style>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">To Account Number</label>
+                    <input type="text" name="to_account_number" class="w-full p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Amount ($)</label>
+                    <input type="number" step="0.01" name="amount" class="w-full p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition">
+                        Confirm Transfer
+                    </button>
+                    <a href="{% url 'accounts' %}" class="text-gray-500 hover:text-gray-800 text-sm">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

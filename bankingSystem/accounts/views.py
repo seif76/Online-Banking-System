@@ -24,16 +24,13 @@ class CreateAccountView(View):
                 user=request.user,
                 account_type=account_type
             )
-            # Success: Just redirect, no message
             return redirect('accounts')
             
         except ValueError as e:
-            # Error: Pass the error string manually to the template
             return render(request, 'accounts/create_account.html', {'error': str(e)})
         
 class DepositView(View):
     def get(self, request, pk):
-        # pk is the ID of the account we want to deposit into
         account = get_object_or_404(BankAccount, pk=pk, user=request.user)
         form = DepositForm()
         return render(request, 'accounts/deposit.html', {'form': form, 'account': account})
@@ -44,7 +41,6 @@ class DepositView(View):
 
         if form.is_valid():
             try:
-                # Call the Service
                 AccountCreation.deposit(
                     account_id=account.id,
                     amount=form.cleaned_data['amount'],
@@ -52,10 +48,9 @@ class DepositView(View):
                     card_cvv=form.cleaned_data['cvv'],
                     card_expiry=form.cleaned_data['expiry']
                 )
-                return redirect('accounts') # Redirect to dashboard on success
+                return redirect('accounts') 
             
             except ValueError as e:
-                # Pass the error to the template
                 return render(request, 'accounts/deposit.html', {
                     'form': form, 
                     'account': account, 
