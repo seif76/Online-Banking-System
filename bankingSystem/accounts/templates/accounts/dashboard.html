@@ -34,7 +34,11 @@
                     <p class="text-sm text-gray-500 uppercase font-semibold">Available Balance</p>
                     <p class="text-3xl font-bold text-green-600">${{ account.balance }}</p>
                 </div>
-
+                <div class="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+                    <a href="{% url 'deposit' account.pk %}" class="text-white bg-blue-600 hover:bg-blue-700 font-medium py-1 px-3 rounded text-sm transition">
+                        + Deposit
+                    </a>
+                </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 text-sm text-gray-500">
                     Created: {{ account.created_at|date:"M d, Y" }}
                 </div>
