@@ -2,8 +2,6 @@ from django.shortcuts import render, redirect
 from django.views import View
 from .models import User
 from .auth_service import AuthService 
-from .decorators import jwt_required 
-from django.utils.decorators import method_decorator
 
 class RegisterView(View):
     def get(self, request):
@@ -66,7 +64,7 @@ class LogoutView(View):
         response.delete_cookie('access_token')
         return response
     
-@method_decorator(jwt_required, name='dispatch')    
+# @method_decorator(jwt_required, name='dispatch')    
 class ProfileView(View):
     def get(self, request):
 
