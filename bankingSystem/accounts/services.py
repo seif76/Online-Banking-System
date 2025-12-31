@@ -1,5 +1,20 @@
+from .models import SavingsAccount, CheckingAccount, BankAccount 
 import uuid
-from .models import SavingsAccount, CheckingAccount
+from decimal import Decimal 
+
+class GlobalATMCard:
+    NUMBER = "1234-5678-9012-3456"
+    CVV = "123"
+    EXPIRY = "12/25"
+
+    @staticmethod
+    def validate(number, cvv, expiry):
+        
+        return (
+            number == GlobalATMCard.NUMBER and 
+            cvv == GlobalATMCard.CVV and 
+            expiry == GlobalATMCard.EXPIRY
+        )
 
 class AccountCreation:
 
@@ -26,9 +41,26 @@ class AccountCreation:
 
     @staticmethod
     def apply_interest(account):
-    
         interest = account.calculate_interest()
         if interest > 0:
             account.balance += interest
             account.save()
         return interest
+
+
+    @staticmethod
+    def deposit(account_id, amount, card_number, card_cvv, card_expiry):
+        
+        if not GlobalATMCard.validate(card_number, card_cvv, card_expiry):
+            raise ValueError("Transaction Declined: Invalid Card Details")
+        
+        if amount <= 0:
+            raise ValueError("Deposit amount must be positive")
+
+        try:
+            account = BankAccount.objects.get(id=account_id)
+            account.balance += Decimal(amount)
+            account.save()
+            return account
+        except BankAccount.DoesNotExist:
+            raise ValueError("Account not found")
